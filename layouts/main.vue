@@ -24,6 +24,7 @@ await onBeforeMount(async() => {
             addAccessToken(data.accessToken);
             setUserDetails(data.data);
         } catch (error) {
+            console.log(error);
             useRouter().push("/login")
         }
     }

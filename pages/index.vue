@@ -477,10 +477,14 @@ export default defineComponent({
 
         const logout = async() => {
             try {
-                await axiosClient.get("/user/logout");
+                const {data} = await axiosClient.get("/user/logout");
+                console.log(data);
                 changeAuthStatus(false);
                 addAccessToken("");
+                
                 useRouter().push("/login");
+                
+                
             } catch (error) {
                 console.log(error);
             }

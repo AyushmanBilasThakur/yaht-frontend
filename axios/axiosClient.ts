@@ -2,7 +2,7 @@ import axios from "axios"
 
 const axiosClient = axios.create({
     baseURL: "https://yaht-backend.herokuapp.com/",
-    withCredentials: true
+    withCredentials: true,
 })
 
 const interceptor = axiosClient.interceptors.response.use(
