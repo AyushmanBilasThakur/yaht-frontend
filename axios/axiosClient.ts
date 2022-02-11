@@ -1,6 +1,7 @@
 import axios from "axios"
 
 const axiosClient = axios.create({
+    // baseURL: "http://localhost:3010",
     baseURL: "https://yaht-backend.herokuapp.com/",
     withCredentials: true,
 })

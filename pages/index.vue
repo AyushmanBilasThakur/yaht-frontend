@@ -219,6 +219,7 @@ import {mdiCog, mdiPlus, mdiTrashCan, mdiPencil, mdiEye, mdiEyeOff} from "@mdi/j
 import { months, weekdays } from "~~/constants";
 import { messageType, useMessageStore } from "~~/store/messageStore";
 import axios from "axios";
+import dayjs from "dayjs";
 
 definePageMeta({
     layout: "main",
@@ -343,10 +344,14 @@ export default defineComponent({
                 habits.value = data.data.map(habit => {
                     
                     // console.log(new Date().getTime() - new Date(habit.lastStreakUpdate).getTime());
-                
-                    habit.isDoneToday = new Date().getTime() - new Date(habit.lastStreakUpdate).getTime() <= 86400000
 
-                    habit.streak = new Date().getTime() - new Date(habit.lastStreakUpdate).getTime() <= 86400000 ? habit.streak : 0;
+                    const diff = dayjs().diff(dayjs(habit.lastStreakUpdate), 'd')
+
+                    console.log(diff);
+
+                    habit.isDoneToday = diff < 1
+
+                    habit.streak = diff < 2 ? habit.streak : 0;
 
                     return habit
                 })
@@ -459,6 +464,7 @@ export default defineComponent({
             try {
                 const {data} = await axiosClient.post("/habits/update-streak",{
                     id: habitId,
+                    currentDate: Date.now()
                 }, {headers: {
                     "Authorization": `Auth ${accessToken.value}`
                 }});
