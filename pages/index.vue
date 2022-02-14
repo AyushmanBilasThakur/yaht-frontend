@@ -59,7 +59,7 @@
                 <p><strong>Current Streak:</strong> {{focusedHabit.streak}} day(s)</p>
 
 
-                <h3 class="mb-2"><strong>This week:</strong></h3>
+                <h3 class="mb-2"><strong>Last 7 days:</strong></h3>
                 <!-- <div v-for="update,index in focusedHabit.updates" :key="index">
 
                     {{new Date(update).getDate()}}/{{(new Date(update).getMonth() + 1)}}/{{new Date(update).getFullYear()}}
@@ -347,8 +347,6 @@ export default defineComponent({
 
                     const diff = dayjs().diff(dayjs(habit.lastStreakUpdate), 'd')
 
-                    console.log(diff);
-
                     habit.isDoneToday = diff < 1
 
                     habit.streak = diff < 2 ? habit.streak : 0;
@@ -511,35 +509,35 @@ export default defineComponent({
         
         let days = new Array<any>(7)
 
-        for(let i = 1; i <= todayDay; i++){
+        for(let i = 1; i <= 6; i++){
 
             let dayInConsideration  = new Date()
             dayInConsideration.setDate(today.getDate() - i);
 
-            days[todayDay - i] = {
-                day: weekdays[todayDay - i],
+            days[6 - i] = {
+                day: weekdays[dayInConsideration.getDay()],
                 date: dayInConsideration,
                 isToday: false
             }
         }
 
-        days[todayDay] = {
-            day: weekdays[todayDay],
+        days[6] = {
+            day: weekdays[today.getDay()],
             date: new Date(),
             isToday: true
         }
 
-        for(let i = todayDay + 1; i <= 6; i++){
+        // for(let i = todayDay + 1; i <= 6; i++){
 
-            let dayInConsideration  = new Date()
-            dayInConsideration.setDate(today.getDate() - todayDay + i);
+        //     let dayInConsideration  = new Date()
+        //     dayInConsideration.setDate(today.getDate() - todayDay + i);
 
-            days[i] = {
-                day: weekdays[i],
-                date: dayInConsideration,
-                isToday: false
-            }
-        }
+        //     days[i] = {
+        //         day: weekdays[i],
+        //         date: dayInConsideration,
+        //         isToday: false
+        //     }
+        // }
 
         const habitDates = ref<any>();
 

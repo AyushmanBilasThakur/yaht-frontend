@@ -21,7 +21,7 @@
                 <input 
                     type="email" 
                     class="input" 
-                    placeholder="abc@gmail.com"
+                    placeholder="abc@email.com"
                     v-model="email"
                     required
                 />
