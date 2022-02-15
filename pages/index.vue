@@ -345,7 +345,7 @@ export default defineComponent({
                     
                     // console.log(new Date().getTime() - new Date(habit.lastStreakUpdate).getTime());
 
-                    const diff = dayjs().diff(dayjs(habit.lastStreakUpdate), 'd')
+                    const diff = dayjs().diff(dayjs(habit.lastStreakUpdate).startOf("day"), 'd')
 
                     habit.isDoneToday = diff < 1
 
@@ -501,7 +501,7 @@ export default defineComponent({
         }
 
         const today = new Date();
-        const todayFormatted = today.getDate() + "th " + months[today.getMonth()] + ", " + today.getFullYear();
+        const todayFormatted = today.getDate() + " " + months[today.getMonth()] + ", " + today.getFullYear();
 
 
         const todayDay = today.getDay();
