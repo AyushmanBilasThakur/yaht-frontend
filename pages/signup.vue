@@ -4,7 +4,7 @@
         
         <Html>
         <Head>
-            <Title>YAHT | Sign up</Title>
+            <Title>Yet Another Habit Tracker | Sign up</Title>
         </Head>
         </Html>
         
@@ -29,7 +29,11 @@
                     v-model="name"
                 />
 
-                <button @click.prevent="checkUsername"  class="mt-1 text-blue-500 w-full text-center">Check if username is available</button>
+                <button v-if="!usernameStatusCheck && !isCheckingUsernameStatus" @click.prevent="checkUsername"  class="mt-1 text-blue-500 w-full text-center">Check if username is available</button>
+
+                <div class="mt-2" v-if="isCheckingUsernameStatus">
+                    <ClipLoader color="#1F398A"/>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -59,7 +63,7 @@
                     :type="passwordVisible ? `text` : `password`"
                     class="input" 
                     name="password"
-                    placeholder="*************"
+                    placeholder="A strong password"
                     required
                     v-model="password"
                 />
@@ -76,7 +80,7 @@
                     :type="repeatPasswordVisible ? `text` : `password`" 
                     class="input" 
                     name="repeatPassword"
-                    placeholder="*************"
+                    placeholder="Repeat the Strong Password"
                     required
                     v-model="repeatPassword"
                 />
@@ -88,7 +92,10 @@
                     value="Sign Up"
                     class="block w-full rounded-md bg-blue-300 py-2 cursor-pointer hover:bg-blue-600 transition-all hover:text-white disabled:bg-gray-400 disabled:text-gray-900"
                     :disabled="!usernameStatusCheck"
+                    v-if="!isSignUpFormSubmitting"
                 />
+
+                <ClipLoader color="#1F398A" v-else/>
             </div>
 
         </form>
@@ -107,13 +114,14 @@ import axiosClient from '~~/axios/axiosClient';
 import { messageType, useMessageStore } from '~~/store/messageStore';
 import SvgIcon from '@jamescoyle/vue-icon';
 import {mdiEye, mdiEyeOff} from '@mdi/js';
+import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 
 definePageMeta({
     layout: "registration",
 })
 
 export default defineComponent({
-    components: {SvgIcon},
+    components: {SvgIcon, ClipLoader},
     setup() {
         useMeta({
             title: "Sign Up | YAHT"
@@ -121,6 +129,7 @@ export default defineComponent({
         const {addMessage} = useMessageStore();
 
         let usernameStatusCheck = ref(false);
+        let isCheckingUsernameStatus = ref(false);
 
         let email = ref("");
         let name = ref("");
@@ -128,6 +137,8 @@ export default defineComponent({
         let repeatPassword = ref("");
         const passwordVisible = ref(false);
         const repeatPasswordVisible = ref(false);
+
+        const isSignUpFormSubmitting = ref(false);
 
         watch(name, () => {
             usernameStatusCheck.value = false;
@@ -138,6 +149,7 @@ export default defineComponent({
                 addMessage("Enter a proper non empty username", messageType.warning)
             }
             try {
+                isCheckingUsernameStatus.value = true;
                 const { data } = await axiosClient.post(`/user/checkname`, {
                     name: name.value,
                 });
@@ -152,6 +164,8 @@ export default defineComponent({
                     console.log(error);
                     addMessage("Something went wrong", messageType.error);
                 }
+            } finally{
+                isCheckingUsernameStatus.value = false;
             }
         }   
 
@@ -165,7 +179,7 @@ export default defineComponent({
             }
 
             try {
-
+                isSignUpFormSubmitting.value = true;
                 const { data } = await axiosClient.post(`/user/create`, {
                     name: name.value,
                     email: email.value,
@@ -191,6 +205,9 @@ export default defineComponent({
                     addMessage("Something went wrong", messageType.error);
                 }
             }
+            finally{
+                isSignUpFormSubmitting.value = false
+            }
         }
 
         return {
@@ -204,7 +221,9 @@ export default defineComponent({
             passwordVisible,
             repeatPasswordVisible,
             mdiEye,
-            mdiEyeOff
+            mdiEyeOff,
+            isCheckingUsernameStatus,
+            isSignUpFormSubmitting
         } 
     },
 })

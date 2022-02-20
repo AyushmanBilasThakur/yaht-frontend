@@ -9,7 +9,6 @@
           </button>
         </div>
       </div>
-
       <NuxtPage></NuxtPage>
     </NuxtLayout>
   </div>
@@ -25,11 +24,7 @@ export default defineComponent({
     setup() {
       const {messages} = storeToRefs(useMessageStore());
       const {removeMessage} = useMessageStore();
-
-      const {addAccessToken, changeAuthStatus} = useAuthStore();
-      
   
-
       const delMessage = (e:any) => {
           e.target.parentElement.classList.add("delete")
       }
@@ -44,8 +39,6 @@ export default defineComponent({
         messages,
         delMessage,
         callAnimEnd,
-        addAccessToken,
-        changeAuthStatus
       }
     }
 })

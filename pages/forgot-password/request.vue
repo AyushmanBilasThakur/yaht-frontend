@@ -31,8 +31,11 @@
                 <input 
                     type="submit" 
                     value="Request for password request"
-                    class="block w-full rounded-md bg-blue-300 py-2 cursor-pointer hover:bg-blue-600 transition-all hover:text-white"   
+                    class="block w-full rounded-md bg-blue-300 py-2 cursor-pointer hover:bg-blue-600 transition-all hover:text-white" 
+                    v-if="!isProcessing"  
                 />
+
+                <ClipLoader v-else color="#1F398A"/>
             </div>
 
         </form>
@@ -46,25 +49,30 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { useAuthStore } from '~~/store/authStore';
 import { useMessageStore, messageType } from '~~/store/messageStore';
 import axiosClient from '~~/axios/axiosClient';
 import axios from 'axios';
-import { useUserStore } from '~~/store/userStore';
+import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 
 definePageMeta({
     layout: "registration",
 })
 
 export default defineComponent({
+    components: {
+        ClipLoader
+    },
     setup() {
 
         const email = ref("");
-        const {addMessage} = useMessageStore();
+        const isProcessing = ref(false);
 
+        const {addMessage} = useMessageStore();
+        
         const authenticate = async() => {
 
             try {
+                isProcessing.value = true
                 let { data } = await axiosClient.post("/user/reset-request", {
                     email: email.value,
                 })
@@ -84,16 +92,15 @@ export default defineComponent({
                     addMessage("Something went wrong", messageType.error)
                 }
             }
-
-
-
-
-
+            finally{
+                isProcessing.value = false;
+            }
         }
 
         return {
             authenticate,
             email,
+            isProcessing
         } 
     },
 })

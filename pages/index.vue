@@ -1,13 +1,23 @@
 <template>
-<div>
+<div class="w-screen h-screen flex justify-center items-center flex-col" v-if="name == ''">
+     <Html>
+        <Head>
+            <Title>Yet Another Habit Tracker | Dashboard</Title>
+        </Head>
+    </Html>
+        <h3 class="mb-5 text-4xl font-bold">Yet Another Habit Tracker</h3>
+        <ClipLoader color="#1F398A"/> 
+</div>
+<div v-else>
+    <Html>
+        <Head>
+            <Title>Yet Another Habit Tracker | Dashboard</Title>
+        </Head>
+    </Html>
     <div class="p-3 flex justify-between items-center max-w-[700px] mx-auto">
-        <Html>
-            <Head>
-                <Title>YAHT | Dashboard | {{ name }}</Title>
-            </Head>
-        </Html>
+       
 
-        <h1 class=" text-2xl">Welcome, {{name}}</h1>
+        <h1 class=" text-2xl">Welcome, {{name}} 👋</h1>
 
         <button class=" text-slate-500 active:text-slate-800 hover:text-slate-800" @click="settingsModalActivated = true">
             <svgIcon type="mdi" :path="mdiCog" />
@@ -24,20 +34,57 @@
         {{todayFormatted}}
     </div>
 
-    <h3 v-if="habits && habits.length == 0" class="text-center my-4">No habits added <button @click="addModalActivated = true" class=" bg-green-300 hover:bg-green-100 px-3 py-1 rounded-md"> Add One?</button></h3>
+    <ClipLoader v-if="isFetchingHabits" color="#1F398A"/>
+
+    <h3 v-if="habits && habits.length == 0 && !isFetchingHabits" class="text-center my-4">No habits added <button @click="addModalActivated = true" class=" bg-green-300 hover:bg-green-100 px-3 py-1 rounded-md"> Add One?</button></h3>
 
         
     <div v-if="habits && habits.length != 0">
+        <div v-for="habit in habits" key="habit._id" class="mx-auto p-4 my-2 max-w-[600px] md:rounded-lg"
+            :class="habit.isPositive? `bg-green-300` : `bg-red-700 text-white`">
 
-        <div v-for="habit in habits" key="habit._id" class="flex justify-between items-center mx-auto p-4 my-2 max-w-[600px] cursor-pointer md:rounded-lg"
-        :class="habit.isPositive? `bg-green-300 hover:bg-green-100` : `bg-red-700 hover:bg-red-900 text-white`"
-        
-        >
-            <input type="checkbox" v-model="habit.isDoneToday" @change="() => updateStreak(habit._id, habit.streak + 1)" class="w-[20px] h-[20px]" :disabled="habit.isDoneToday"/>
+            <div v-if="habit._id == habitBeingDeleted">
+                <ClipLoader color="#1F398A"/>
+            </div>
+            
+            <div v-else>
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xl">{{habit.name}}</p>
+                    <p>{{habit.isPositive ? "Streak 🔥" : "Negetive Streak 👎"}} {{habit.streak}} day(s)</p>
+                </div>
 
-            <div class="flex-1 ml-3" @click="() => focusOnAHabit(habit._id)">
-                <p class="text-xl">{{habit.name}}</p>
-                <p>{{habit.isPositive ? "Streak 🔥" : "Negetive Streak 👎"}} {{habit.streak}} day(s)</p>
+                
+                <button @click="() => updateStreak(habit._id, habit.streak + 1)" class="px-4 py-2 bg-purple-700 hover:bg-purple-900 text-white disabled:bg-gray-500 disabled:text-gray-900" :disabled="habit.isDoneToday">
+                    Done Today
+                </button>
+               
+                
+            </div>
+            
+            
+            <div class="grid grid-cols-7 gap-2 mt-3">
+                <div v-for="day,i in days" :class="day.isToday ? `today` : ``" :key="i" class="flex flex-col justify-center items-center py-3 border-2 border-black bg-white">
+                    <p>{{day.day[0]}}</p>
+                    <h3 class="text-xl font-bold">{{day.date.getDate()}}</h3>
+
+                    <p>{{habit.updates.map(d => new Date(d).toDateString()).indexOf(day.date.toDateString()) != -1 ? "✅" : "&nbsp;"}}</p>
+                </div>
+            </div>
+
+            <div class="flex mt-2 gap-2">
+
+                <button @click="() => {focusedHabit=habit;deleteHabit();}" class="px-4 py-2 bg-red-700 hover:bg-red-900 text-white flex justify-center items-center w-[50%] gap-1">
+                        <svgIcon type="mdi" :path="mdiTrashCan"/>Delete Habit
+                </button>
+
+                 <button @click="() => {editedHabitName = habit.name; focusedHabit=habit; editModalActivated = true;}" class="px-4 py-2 bg-purple-700 hover:bg-purple-900 text-white flex justify-center items-center w-[50%] gap-1" >
+                        <svgIcon type="mdi" :path="mdiPencil"/> Edit Habit
+                </button>
+                
+            </div>
+
             </div>
         </div>
 
@@ -46,50 +93,6 @@
     <button class="fixed bottom-4 right-4 text-6xl bg-green-300 hover:bg-green-800 hover:text-white p-4 rounded-[100px]" @click="addModalActivated = true">
         <svgIcon type="mdi" :path="mdiPlus" />
     </button>
-
-
-    <div class="modalContainer" v-if="detailsModalActivated">
-        <div class="bg-white rounded-md w-[300px] p-4 relative">
-            <h3 class="text-xl mb-2 font-bold">{{focusedHabit.name}}</h3>
-            
-
-            <div>
-                <!-- <p><strong>Type:</strong> {{focusedHabit.isPositive? "positive" : "negetive"}}</p> -->
-
-                <p><strong>Current Streak:</strong> {{focusedHabit.streak}} day(s)</p>
-
-
-                <h3 class="mb-2"><strong>Last 7 days:</strong></h3>
-                <!-- <div v-for="update,index in focusedHabit.updates" :key="index">
-
-                    {{new Date(update).getDate()}}/{{(new Date(update).getMonth() + 1)}}/{{new Date(update).getFullYear()}}
-                </div> -->
-
-
-                <div class="grid grid-cols-7 gap-2">
-                    <div v-for="day,i in days" :class="day.isToday ? `today` : ``" :key="i" class="flex flex-col justify-center items-center py-3 border-2 border-black">
-                        <p>{{day.day[0]}}</p>
-                        <h3 class="text-xl font-bold">{{day.date.getDate()}}</h3>
-
-                        <p>{{habitDates.indexOf(day.date.toDateString()) != -1 ? "✅" : "&nbsp;"}}</p>
-                    </div>
-                </div>
-
-
-                <button class="w-full bg-green-300 text-black rounded-lg mt-2 py-2 flex justify-center items-center" @click="editModalActivated = true; detailsModalActivated = false;"><svgIcon type="mdi" :path="mdiPencil"/>Edit Habit</button>
-
-                <button class="w-full bg-red-600 text-white rounded-lg mt-2 py-2 flex justify-center items-center" @click="() => deleteHabit()"><svgIcon type="mdi" :path="mdiTrashCan"/>Delete Habit</button>
-
-                
-
-                <button @click="detailsModalActivated = false" class="text-red-500 w-full mt-2">close</button>
-            </div>
-        
-        
-        </div>
-
-
-    </div>
 
     <div class="modalContainer" v-if="settingsModalActivated">
         <div class="bg-white rounded-md w-[300px] p-4 relative">
@@ -108,10 +111,12 @@
                         placeholder="noobmaster69"
                         v-model="tempname"
                         required
+                        @keydown="() => usernameStatusCheck = false"
                     />
                 </div>
-                <button @click.prevent="checkUsername" class="w-full text-center mb-2 p-2 border-2 border-green-800 rounded-md hover:font-bold">Check Username</button>
-                <input type="submit" value="Change Username" class="w-full text-center bg-green-500 p-2 rounded-md cursor-pointer hover:bg-green-800 hover:text-white disabled:bg-gray-300 disabled:text-gray-800" :disabled="!usernameStatusCheck">
+                <button v-if="!isCheckingUsername && !usernameStatusCheck" @click.prevent="checkUsername" class="w-full text-center mb-2 p-2 border-2 border-green-800 rounded-md hover:font-bold">Check Username</button>
+                <ClipLoader v-if="isCheckingUsername || isChangingUsername" color="#1F398A"/>
+                <input type="submit" value="Change Username" class="w-full text-center bg-green-500 p-2 rounded-md cursor-pointer hover:bg-green-800 hover:text-white disabled:bg-gray-300 disabled:text-gray-800" v-if="usernameStatusCheck && !isChangingUsername">
             </form>
 
             <hr class="mb-2">
@@ -130,7 +135,7 @@
                         :type="currentPasswordVisible ? `text` : `password`"
                         class="input" 
                         name="password"
-                        placeholder="*************"
+                        placeholder="Enter old password"
                         required
                         v-model="currentPassword"
                     />
@@ -147,13 +152,14 @@
                         :type="newPasswordVisible ? `text` : `password`"
                         class="input" 
                         name="passwordII"
-                        placeholder="*************"
+                        placeholder="Enter new strong password"
                         required
                         v-model="newPassword"
                     />
                 </div>
 
-                <input type="submit" value="Change Password" class="w-full text-center bg-green-500 p-2 rounded-md cursor-pointer hover:bg-green-800 hover:text-white disabled:bg-gray-300 disabled:text-gray-800">
+                <input type="submit" value="Change Password" class="w-full text-center bg-green-500 p-2 rounded-md cursor-pointer hover:bg-green-800 hover:text-white disabled:bg-gray-300 disabled:text-gray-800" v-if="!isUpdatingPassword">
+                <ClipLoader v-if="isUpdatingPassword" color="#1F398A"/>
             </form>
 
             <button @click="settingsModalActivated = false" class="text-red-500 w-full mt-2">close</button>
@@ -167,10 +173,12 @@
             <form @submit.prevent="editHabit">
                 <div class="form-control mb-2">
                     <label for="name" class="font-bold">Habit Name</label>
-                    <input class="w-full block bg-white mt-2 border-2 rounded-md border-black px-2 py-1" type="text" name="name" id="name" v-model="focusedHabit.name">
+                    <input class="w-full block bg-white mt-2 border-2 rounded-md border-black px-2 py-1" type="text" name="name" id="name" v-model="editedHabitName">
                 </div>
 
-                <input class="w-full block bg-green-300 mt-2 border-2 rounded-md border-black px-2 py-1 cursor-pointer" type="submit" value="Update Habit">
+                <input class="w-full block bg-green-300 mt-2 border-2 rounded-md border-black px-2 py-1 cursor-pointer" type="submit" value="Update Habit" v-if="!isEditingHabit">
+                
+                <ClipLoader v-else color="#1F398A"/>
 
             </form>
 
@@ -197,7 +205,9 @@
                 <p class="my-2">*Be sure before creating a habit. Because if you delete a tracked habit you automatically lose 500xp</p>
 
 
-                <input class="bg-green-300 px-2 py-1 rounded-md w-full cursor-pointer hover:bg-green-100" type="submit" value="Add new Habit">
+                <input class="bg-green-300 px-2 py-1 rounded-md w-full cursor-pointer hover:bg-green-100" type="submit" value="Add new Habit" v-if="!isCreatingNewHabit">
+
+                <ClipLoader v-else color="#1F398A"/>
             </form>
         </div>
     </div>
@@ -220,13 +230,14 @@ import { months, weekdays } from "~~/constants";
 import { messageType, useMessageStore } from "~~/store/messageStore";
 import axios from "axios";
 import dayjs from "dayjs";
+import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 
 definePageMeta({
     layout: "main",
 })
 
 export default defineComponent({
-    components: { svgIcon },
+    components: { svgIcon, ClipLoader },
     setup(){
         const {changeAuthStatus, addAccessToken} = useAuthStore();
         const {addMessage} = useMessageStore();
@@ -235,6 +246,7 @@ export default defineComponent({
         let {setUserDetails} = useUserStore();
 
         let {accessToken} = storeToRefs(useAuthStore());
+
 
         const habits = ref<Array<any>>([]);
         let addModalActivated = ref<boolean>(false);
@@ -248,9 +260,17 @@ export default defineComponent({
         
         let focusedHabit = ref<any>();
 
+        const isCreatingNewHabit = ref(false);
+        const isEditingHabit = ref(false);
+        const isFetchingHabits = ref(false);
+        
+
+        const editedHabitName = ref("");
+
         const createNewHabit = async() => {
 
             try {
+                isCreatingNewHabit.value = true;
                 const {data} = await axiosClient.post("/habits/create", {
                     name: habitName.value,
                     isPositive: true
@@ -272,15 +292,18 @@ export default defineComponent({
                 addMessage(error.toString(), messageType.error)
             }
 
-
+            finally{
+                isCreatingNewHabit.value = false;
+            }
 
         }
 
         const editHabit = async() => {
             try {
+                isEditingHabit.value = true;
                 const {data} = await axiosClient.post("/habits/update", {
                     id: focusedHabit.value._id,
-                    name: focusedHabit.value.name
+                    name: editedHabitName.value
                 }, {
                     headers: {
                         "Authorization": `Auth ${accessToken.value}`
@@ -291,6 +314,13 @@ export default defineComponent({
 
                 editModalActivated.value = false; 
 
+                habits.value = habits.value.map(habit => {
+                    if(habit._id == focusedHabit.value._id){
+                        habit.name = editedHabitName.value
+                    }
+                    return habit;
+                })
+
             } catch (error) {
                 if(axios.isAxiosError(error)){
                     addMessage(error.response.data.message, messageType.error)
@@ -298,16 +328,21 @@ export default defineComponent({
                 else{
                     addMessage(error.toString(), messageType.error)
                 }
+            }finally{
+                isEditingHabit.value = false;
             }
         }
 
+
+        const habitBeingDeleted = ref("");
         const deleteHabit = async() => {
 
-            if(!confirm("You want to delete this habit? You will lose 500 xp for that")){
+            if(!confirm("You want to delete this habit? You will lose 500 xp")){
                 return;
             }
 
             try {
+                habitBeingDeleted.value = focusedHabit.value._id;
                 const {data} = await axiosClient.post("/habits/delete", {
                     id: focusedHabit.value._id
                 }, {
@@ -329,11 +364,14 @@ export default defineComponent({
                 else{
                     addMessage(error.toString(), messageType.error)
                 }
+            } finally{
+                habitBeingDeleted.value = "";
             }
         }
 
         const getHabits = async() => {
             if(accessToken.value != ""){
+                isFetchingHabits.value = true
                 try {
                 const {data} = await axiosClient.get("/habits/all", {
                     headers: {
@@ -359,24 +397,27 @@ export default defineComponent({
                         return;
                     }
                     addMessage(error.toString(), messageType.error);
+                } finally {
+                    isFetchingHabits.value = false;
                 }
             }
         }
 
         const usernameStatusCheck = ref(false);
         const tempname = ref(name.value);
+        const isCheckingUsername = ref(false);
         const checkUsername = async() => {
-            if(name.value == ""){
+            if(tempname.value == ""){
                 addMessage("Enter a proper non empty username", messageType.warning)
             }
             try {
+                isCheckingUsername.value = true;
                 const { data } = await axiosClient.post(`/user/checkname`, {
                     name: tempname.value,
                 });
 
                 usernameStatusCheck.value = !data.data;
                 addMessage(data.message, messageType.success)
-                name.value = tempname.value
             } catch (error) {
                 if(axios.isAxiosError(error)){
                     addMessage(error.response.data.message, messageType.error);
@@ -385,19 +426,24 @@ export default defineComponent({
                     console.log(error);
                     addMessage("Something went wrong", messageType.error);
                 }
+            } finally{
+                isCheckingUsername.value = false;
             }
         }   
 
+
+        const isChangingUsername = ref(false);
         const changeUsername = async() => {
             try {
+                isChangingUsername.value = true
                 const {data} = await axiosClient.post("/user/update", {
-                    name: name.value
+                    name: tempname.value
                 }, {
                     headers: {
                         "Authorization": `Auth ${accessToken.value}`
                     }
                 })
-
+                name.value = tempname.value;
                 addMessage(data.message, messageType.success);
             } catch (error) {
                 if(axios.isAxiosError(error)){
@@ -408,6 +454,9 @@ export default defineComponent({
                     addMessage("Something went wrong", messageType.error);
                 }
             }
+            finally{
+                isChangingUsername.value = false;
+            }
         }
         
 
@@ -417,8 +466,11 @@ export default defineComponent({
         const newPassword = ref("")
         const newPasswordVisible = ref(false);
 
+        const isUpdatingPassword = ref(false);
+
         const updatePassword = async() => {
             try {
+                isUpdatingPassword.value = true
                 const {data} = await axiosClient.post("/user/update-password", {
                     oldPassword: currentPassword.value,
                     newPassword: newPassword.value
@@ -440,6 +492,8 @@ export default defineComponent({
                     console.log(error);
                     addMessage("Something went wrong", messageType.error);
                 }
+            } finally{
+                isUpdatingPassword.value = false;
             }
         }
 
@@ -449,7 +503,7 @@ export default defineComponent({
 
         const updateStreak = async(habitId: string, streak: number) => {
             
-            if(!confirm("Are you sure you have done this task todayx?")){
+            if(!confirm("Are you sure you have done this task today?")){
                 habits.value = habits.value.map(habit => {
                     if(habit._id == habitId){
                         habit.isDoneToday = false;
@@ -481,6 +535,7 @@ export default defineComponent({
 
         const logout = async() => {
             try {
+                name.value = "";
                 const {data} = await axiosClient.get("/user/logout");
                 console.log(data);
                 changeAuthStatus(false);
@@ -503,9 +558,6 @@ export default defineComponent({
         const today = new Date();
         const todayFormatted = today.getDate() + " " + months[today.getMonth()] + ", " + today.getFullYear();
 
-
-        const todayDay = today.getDay();
-
         
         let days = new Array<any>(7)
 
@@ -526,18 +578,6 @@ export default defineComponent({
             date: new Date(),
             isToday: true
         }
-
-        // for(let i = todayDay + 1; i <= 6; i++){
-
-        //     let dayInConsideration  = new Date()
-        //     dayInConsideration.setDate(today.getDate() - todayDay + i);
-
-        //     days[i] = {
-        //         day: weekdays[i],
-        //         date: dayInConsideration,
-        //         isToday: false
-        //     }
-        // }
 
         const habitDates = ref<any>();
 
@@ -582,7 +622,15 @@ export default defineComponent({
             currentPasswordVisible,
             newPassword,
             newPasswordVisible,
-            updatePassword
+            updatePassword,
+            isCreatingNewHabit,
+            isEditingHabit,
+            isFetchingHabits,
+            editedHabitName,
+            habitBeingDeleted,
+            isCheckingUsername,
+            isChangingUsername,
+            isUpdatingPassword
         }
     }
 
@@ -603,6 +651,7 @@ export default defineComponent({
     }
 
     .today{
-        @apply bg-green-300;
+        @apply bg-green-900;
+        @apply text-white;
     }
 </style>

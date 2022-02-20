@@ -50,7 +50,10 @@
                     type="submit" 
                     value="Request for password request"
                     class="block w-full rounded-md bg-blue-300 py-2 cursor-pointer hover:bg-blue-600 transition-all hover:text-white"   
+                    v-if="!isProcessing"
                 />
+
+                <ClipLoader v-else color="#1F398A"/>
             </div>
 
         </form>
@@ -79,7 +82,7 @@ export default defineComponent({
         SvgIcon
     },
     setup() {
-
+        const isProcessing = ref(false);
         const password = ref("");
         const repeatPassword = ref("");
         const passwordVisible = ref(false);
@@ -93,6 +96,7 @@ export default defineComponent({
             } 
             
             try {
+                isProcessing.value =true
                 let { data } = await axiosClient.post("/user/reset-password", {
                     verificationCode: useRoute().params["id"],
                     password: password.value,
@@ -111,6 +115,9 @@ export default defineComponent({
                     addMessage("Something went wrong", messageType.error)
                 }
             }
+            finally{
+                isProcessing.value = false
+            }
 
 
 
@@ -125,7 +132,8 @@ export default defineComponent({
             passwordVisible,
             repeatPasswordVisible,
             mdiEye,
-            mdiEyeOff
+            mdiEyeOff,
+            isProcessing
         } 
     },
 })

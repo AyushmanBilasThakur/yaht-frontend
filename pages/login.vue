@@ -4,7 +4,7 @@
         
         <Html>
         <Head>
-            <Title>YAHT | Login</Title>
+            <Title>Yet Another Habit Tracker | Login</Title>
         </Head>
         </Html>
         
@@ -38,7 +38,7 @@
                 <input 
                     :type="passwordVisible ? `text`: `password`" 
                     class="input" 
-                    placeholder="*************"
+                    placeholder="Your Password"
                     v-model="password"
                     required
                 />
@@ -50,8 +50,16 @@
                 <input 
                     type="submit" 
                     value="Login"
-                    class="block w-full rounded-md bg-blue-300 py-2 cursor-pointer hover:bg-blue-600 transition-all hover:text-white"   
+                    class="block w-full rounded-md bg-blue-300 py-2 cursor-pointer hover:bg-blue-600 transition-all hover:text-white" 
+                    v-if="!isProcessing"
                 />
+
+                <div v-else>
+                    <ClipLoader color="#1F398A"/>
+                </div>
+                
+
+
             </div>
 
         </form>
@@ -72,6 +80,7 @@ import axios from 'axios';
 import { useUserStore } from '~~/store/userStore';
 import SvgIcon from '@jamescoyle/vue-icon';
 import {mdiEye, mdiEyeOff} from "@mdi/js";
+import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 
 definePageMeta({
     layout: "registration",
@@ -85,11 +94,13 @@ export default defineComponent({
         const email = ref("");
         const password = ref("");
         const passwordVisible = ref(false);
+        const isProcessing = ref(false);
         const { changeAuthStatus, addAccessToken } = useAuthStore();
         const { setUserDetails } = useUserStore();
         const { addMessage } = useMessageStore();
         const authenticate = async () => {
             try {
+                isProcessing.value = true
                 let { data } = await axiosClient.post("/user/login", {
                     email: email.value,
                     password: password.value
@@ -108,6 +119,9 @@ export default defineComponent({
                     addMessage("Something went wrong", messageType.error);
                 }
             }
+            finally{
+                isProcessing.value = false;
+            }
         };
         return {
             authenticate,
@@ -115,10 +129,11 @@ export default defineComponent({
             password,
             passwordVisible,
             mdiEye,
-            mdiEyeOff
+            mdiEyeOff,
+            isProcessing
         };
     },
-    components: { SvgIcon }
+    components: { SvgIcon, ClipLoader,  }
 })
 </script>
 
