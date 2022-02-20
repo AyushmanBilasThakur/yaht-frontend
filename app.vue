@@ -1,10 +1,10 @@
 <template>
   <div>
     <Html>
-      <Head>
-        <Script data-ad-client="ca-pub-3135078613883761" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></Script>
-      </Head>
-    </Html>
+        <Head>
+          <Script data-ad-client="ca-pub-3135078613883761" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></Script>
+        </Head>
+      </Html>
     <NuxtLayout>
       <div class="absolute top-3 left-0 right-0 block z-40">
         <div v-for="(message, index) in messages" :class="`message message-${message.type}`" :key="index" @animationend="(e) => callAnimEnd(e, index)">
