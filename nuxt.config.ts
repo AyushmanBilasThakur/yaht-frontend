@@ -18,5 +18,14 @@ export default defineNuxtConfig({
     },
     buildModules: [
         '@pinia/nuxt',
-    ]
+    ],
+    head:{
+        script: [
+            {
+                "data-ad-client": "ca-pub-3135078613883761",
+                defer: true,
+                src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+            }
+        ]
+    }
 })
