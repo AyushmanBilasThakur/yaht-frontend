@@ -6,7 +6,8 @@ export const useUserStore = defineStore({
         return {
             name: "",
             xp: 0,
-            level: 0
+            level: 0,
+            googleId: ""
         }
     },
     actions: {
@@ -14,6 +15,7 @@ export const useUserStore = defineStore({
             this.name = user.name;
             this.xp = user.xp;
             this.level = user.level;
+            this.googleId = user.googleId ? user.googleId : "";
         }
     }
 })

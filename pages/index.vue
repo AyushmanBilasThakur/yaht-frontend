@@ -98,6 +98,11 @@
         <div class="bg-white rounded-md w-[300px] p-4 relative">
             <h3 class="text-xl mb-2 font-bold">Settings</h3>
 
+            <a :href="loginWithGoogleURL" v-if="googleId == ''" class="w-full py-2 bg-white border-2 border-black mb-2 flex gap-2 justify-center items-center hover:bg-gray-200">
+            <svgIcon type="mdi" :path="mdiGoogle" />
+                Link Google Account
+            </a>
+
             <form @submit.prevent="changeUsername" class="mb-4">
                 <div class="mb-4">
                     <label 
@@ -225,7 +230,7 @@ import axiosClient from "~~/axios/axiosClient"
 import { useAuthStore } from "~~/store/authStore"
 import { useUserStore } from "~~/store/userStore";
 import svgIcon from "@jamescoyle/vue-icon";
-import {mdiCog, mdiPlus, mdiTrashCan, mdiPencil, mdiEye, mdiEyeOff} from "@mdi/js";
+import {mdiCog, mdiPlus, mdiTrashCan, mdiPencil, mdiEye, mdiEyeOff, mdiGoogle} from "@mdi/js";
 import { months, weekdays } from "~~/constants";
 import { messageType, useMessageStore } from "~~/store/messageStore";
 import axios from "axios";
@@ -242,7 +247,7 @@ export default defineComponent({
         const {changeAuthStatus, addAccessToken} = useAuthStore();
         const {addMessage} = useMessageStore();
 
-        let {name, xp, level} = storeToRefs(useUserStore());
+        let {name, xp, level, googleId} = storeToRefs(useUserStore());
         let {setUserDetails} = useUserStore();
 
         let {accessToken} = storeToRefs(useAuthStore());
@@ -585,7 +590,25 @@ export default defineComponent({
 
             habitDates.value = focusedHabit.value.updates.map(d => new Date(d).toDateString())
         })
+    
+        const loginWithGoogleURL = computed(() => {
+            const params = {
+                client_id: "632769304840-f2o4kubg5ajfgpmoqe1ejqqva4fo02hf.apps.googleusercontent.com",
+                redirect_uri:
+                "http://localhost:3000/redirect/google-link",
+                response_type: "code",
+                prompt: "select_account",
+                scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+            }
 
+            const url = new URL("https://accounts.google.com/o/oauth2/v2/auth")
+            Object.keys(params).forEach(k => {
+                const v = params[k];
+                url.searchParams.append(k,v);
+            })
+
+            return url.toString();
+        })
 
         return {
             name,
@@ -598,6 +621,7 @@ export default defineComponent({
             mdiPencil,
             mdiEye,
             mdiEyeOff,
+            mdiGoogle,
             todayFormatted,
             habits,
             updateStreak,
@@ -630,7 +654,9 @@ export default defineComponent({
             habitBeingDeleted,
             isCheckingUsername,
             isChangingUsername,
-            isUpdatingPassword
+            isUpdatingPassword,
+            googleId,
+            loginWithGoogleURL
         }
     }
 

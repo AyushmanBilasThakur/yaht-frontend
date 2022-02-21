@@ -64,6 +64,12 @@
 
         </form>
 
+        <p class=" mt-2 text-md text-center">Or,</p>
+
+        <a :href="loginWithGoogleURL" class=" mt-2 border-2 border-black py-2 rounded-md w-full bg-white text-black hover:bg-gray-100 flex justify-center items-center gap-2">
+            <SvgIcon type="mdi" :path="mdiGoogle" size="20px"/> Sign In With Google
+        </a>
+
         <p class="mt-2 text-center">Don't have an account? 
             <NuxtLink to="/signup" class="link">Sign Up</NuxtLink>
         </p>
@@ -79,7 +85,7 @@ import axiosClient from '~~/axios/axiosClient';
 import axios from 'axios';
 import { useUserStore } from '~~/store/userStore';
 import SvgIcon from '@jamescoyle/vue-icon';
-import {mdiEye, mdiEyeOff} from "@mdi/js";
+import {mdiEye, mdiEyeOff, mdiGoogle} from "@mdi/js";
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 
 definePageMeta({
@@ -123,6 +129,27 @@ export default defineComponent({
                 isProcessing.value = false;
             }
         };
+        
+
+        const loginWithGoogleURL = computed(() => {
+            const params = {
+                client_id: "632769304840-f2o4kubg5ajfgpmoqe1ejqqva4fo02hf.apps.googleusercontent.com",
+                redirect_uri:
+                "http://localhost:3000/redirect/google",
+                response_type: "code",
+                prompt: "select_account",
+                scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+            }
+
+            const url = new URL("https://accounts.google.com/o/oauth2/v2/auth")
+            Object.keys(params).forEach(k => {
+                const v = params[k];
+                url.searchParams.append(k,v);
+            })
+
+            return url.toString();
+        })
+
         return {
             authenticate,
             email,
@@ -130,7 +157,9 @@ export default defineComponent({
             passwordVisible,
             mdiEye,
             mdiEyeOff,
-            isProcessing
+            isProcessing,
+            mdiGoogle,
+            loginWithGoogleURL,
         };
     },
     components: { SvgIcon, ClipLoader,  }
