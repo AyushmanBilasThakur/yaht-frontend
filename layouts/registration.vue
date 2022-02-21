@@ -1,7 +1,7 @@
 <template>
     <div class="wrapper">
         <div v-if="isLoading">
-             <h3 class="mb-5 text-4xl font-bold">Yet Another Habit Tracker</h3>
+             <h3 class="mb-5 text-4xl font-bold text-center">Yet Another Habit Tracker</h3>
             <ClipLoader color="#1F398A" />
         </div>
         <div v-else>
