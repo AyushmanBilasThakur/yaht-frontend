@@ -100,6 +100,10 @@
 
         </form>
 
+        <a :href="loginWithGoogleURL" class=" mt-2 border-2 border-black py-2 rounded-md w-full bg-white text-black hover:bg-gray-100 flex justify-center items-center gap-2">
+            <SvgIcon type="mdi" :path="mdiGoogle" size="20px"/> Sign Up With Google
+        </a>
+
         <p class="mt-2 text-center">Have an account? 
             <NuxtLink to="/login" class="link">Log in</NuxtLink>
         </p>
@@ -113,7 +117,7 @@ import { defineComponent } from 'vue';
 import axiosClient from '~~/axios/axiosClient';
 import { messageType, useMessageStore } from '~~/store/messageStore';
 import SvgIcon from '@jamescoyle/vue-icon';
-import {mdiEye, mdiEyeOff} from '@mdi/js';
+import {mdiEye, mdiEyeOff, mdiGoogle} from '@mdi/js';
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 
 definePageMeta({
@@ -210,6 +214,25 @@ export default defineComponent({
             }
         }
 
+        const loginWithGoogleURL = computed(() => {
+            const params = {
+                client_id: "632769304840-f2o4kubg5ajfgpmoqe1ejqqva4fo02hf.apps.googleusercontent.com",
+                redirect_uri:
+                "https://yaht.netlify.app/redirect/google",
+                response_type: "code",
+                prompt: "select_account",
+                scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+            }
+
+            const url = new URL("https://accounts.google.com/o/oauth2/v2/auth")
+            Object.keys(params).forEach(k => {
+                const v = params[k];
+                url.searchParams.append(k,v);
+            })
+
+            return url.toString();
+        })
+
         return {
             email,
             name,
@@ -223,7 +246,9 @@ export default defineComponent({
             mdiEye,
             mdiEyeOff,
             isCheckingUsernameStatus,
-            isSignUpFormSubmitting
+            isSignUpFormSubmitting,
+            loginWithGoogleURL,
+            mdiGoogle
         } 
     },
 })
