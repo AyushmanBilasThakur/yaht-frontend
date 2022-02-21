@@ -1,5 +1,10 @@
 <template>
-    <strong>Terms &amp; Conditions</strong> <p>
+
+    <div class="flex justify-center items-center py-24 mb-4 bg-slate-300">
+        <p class="text-4xl">Terms &amp; Conditions</p>
+    </div>
+    <div class="px-5 max-w-[1020px] w-[90%] mx-auto">
+    <p>
         By downloading or using the app, these terms will
         automatically apply to you – you should make sure therefore
         that you read them carefully before using the app. You’re not
@@ -95,4 +100,15 @@
         Terms and Conditions, do not hesitate to contact us
         at ayushmanbilasthakur@gmail.com.
     </p>      
+    </div>
 </template>
+
+<style scoped>
+strong{
+    @apply font-bold;
+    @apply text-black;
+    @apply text-xl;
+    @apply py-5;
+    @apply block;
+}
+</style>
