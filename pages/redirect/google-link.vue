@@ -46,8 +46,6 @@ watch(accessToken, async() => {
                 }
             });
             addMessage(data.message, messageType.success);
-            changeAuthStatus(true);
-            addAccessToken(data.accessToken);
             setUserDetails(data.data);
 
             useRouter().push("/");
