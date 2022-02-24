@@ -2,7 +2,6 @@
   <div>
     <Html>
         <Head>
-          <Script data-ad-client="ca-pub-3135078613883761" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></Script>
           <Meta name="google-site-verification" content="15WhnMamXcL0ehEoueVFT_bMrmF0xryJOyxixPWrIJg" />
         </Head>
       </Html>
