@@ -595,7 +595,7 @@ export default defineComponent({
             const params = {
                 client_id: "632769304840-f2o4kubg5ajfgpmoqe1ejqqva4fo02hf.apps.googleusercontent.com",
                 redirect_uri:
-                "https://yaht.netlify.app/redirect/google-link",
+                "https://www.yahabittracker.com/redirect/google-link",
                 response_type: "code",
                 prompt: "select_account",
                 scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
