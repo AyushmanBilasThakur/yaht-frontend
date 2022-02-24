@@ -133,7 +133,7 @@ export default defineComponent({
 
         const loginWithGoogleURL = computed(() => {
             const params = {
-                client_id: "632769304840-f2o4kubg5ajfgpmoqe1ejqqva4fo02hf.apps.googleusercontent.com",
+                client_id: "836853666460-h1mu3avs4o429jrl4e1kr9um3ch4gk4o.apps.googleusercontent.com",
                 redirect_uri:
                 "https://www.yahabittracker.com/redirect/google",
                 response_type: "code",
